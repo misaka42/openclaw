@@ -1,21 +1,21 @@
 # OpenClaw Fly.io deployment configuration for DashScope
 # See https://fly.io/docs/reference/configuration/
 
-app = "openclaw-gateway"
+app = "openclaw-dashscope"
 primary_region = "sin"
 
 [build]
-dockerfile = "Dockerfile.fly"
+# Use the project's standard Dockerfile
 
 [env]
 NODE_ENV = "production"
 OPENCLAW_PREFER_PNPM = "1"
 OPENCLAW_STATE_DIR = "/data"
 OPENAI_BASE_URL = "https://coding.dashscope.aliyuncs.com/v1"
-NODE_OPTIONS = "--max-old-space-size=1024"
 
 [processes]
-app = "/entrypoint.sh"
+# Override CMD to initialize config and start gateway
+app = "sh -c 'mkdir -p /data && if [ ! -f /data/openclaw.json ]; then echo \"{\\\"agent\\\":{\\\"model\\\":\\\"openai/glm-5\\\",\\\"thinking\\\":\\\"medium\\\"},\\\"agents\\\":{\\\"defaults\\\":{\\\"model\\\":\\\"openai/qwen3.5-plus\\\",\\\"thinking\\\":\\\"medium\\\"}}}\" > /data/openclaw.json; fi && exec node openclaw.mjs gateway --bind 0.0.0.0 --port 3000'"
 
 [http_service]
 internal_port = 3000
